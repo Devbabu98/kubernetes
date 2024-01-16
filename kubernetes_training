@@ -1,0 +1,244 @@
+
+CLuster: 3 Machines
+    
+    
+Master: Ubuntu, t2.medium
+network: default
+SG: default
+Disk Size: 35GB
+    
+Workers : 2 machines , ubuntu, t2.micto
+network: default
+SG: default
+Disk Size: 35GB
+
+
+Script:
+    
+#!/bin/bash
+sudo echo -e "Tech@2020\nTech@2020" | passwd root;
+sudo cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config_backup;
+sudo sed -i 's/^PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config;
+sudo sed -i 's/^PermitRootLogin*/PermitRootLogin yes/' /etc/ssh/sshd_config;
+sudo echo "PermitRootLogin yes" >> /etc/ssh/sshd_config;
+sudo systemctl restart sshd;
+sudo apt install -y wget unzip curl;
+
+
+
+
+access keys >>>> 
+
+
+putty, CLI >>>> root, Tech@2020
+
+----------------------------------------
+Kubernetes Cluster Installation
+
+
+Step 1 : 
+Set the hostname
+    
+Master : hostnamectl set-hostname master
+    
+Worker1 : hostnamectl set-hostname worker1
+    
+    
+worker2 : hostnamectl set-hostname worker2
+    
+-----
+
+Step 2: 
+install docker, kubeadm, kubelet, kubectl  (on each machine)
+    
+vi script.sh
+
+#!/bin/bash 
+sudo apt update -y
+sudo apt install apt-transport-https ca-certificates curl software-properties-common  -y
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+sudo apt update -y
+apt-cache policy docker-ce -y
+sudo apt install docker-ce -y
+wget -q -O - https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo deb http://apt.kubernetes.io/ kubernetes-xenial main | sudo tee /etc/apt/sources.list.d/kubernetes.list
+apt update -y
+apt install kubelet=1.21.1-00 kubeadm=1.21.1-00 kubectl=1.21.1-00 -y
+sysctl net.bridge.bridge-nf-call-iptables=1
+
+
+run the script on each machine
+
+sh script. sh
+
+----
+
+Step 3: initialize the kubeadm package (only on the master node)
+    
+kubeadm init --pod-network-cidr=10.10.0.0/16 >> cluster_initialized.txt
+
+
+
+instructions >>>>
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.31.52.51:6443 --token ctcuxa.7h3157qysupeamza \
+        --discovery-token-ca-cert-hash sha256:fe997124b7dde22da775646e013cd56889aa1549b6565a5674a0561850472341
+            
+            
+follow all the above instrustions>>
+
+
+instruction1 :
+    
+    
+ mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+    
+    
+ instructions 2 :
+    
+    
+   kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+    
+  instruction 3: use the token on the worker nodes
+    
+    kubeadm join 172.31.52.51:6443 --token ctcuxa.7h3157qysupeamza \
+        --discovery-token-ca-cert-hash sha256:fe997124b7dde22da775646e013cd56889aa1549b6565a5674a0561850472341
+ 
+
+---------
+---------
+
+19  kubectl get nodes
+   20  cat .kube/config
+   21  clear
+   22  kubectl get nodes
+   23  kubectl get pods
+   24  kubectl get ns
+   25  kubectl get pods -n kube-system
+   26  kubectl get pods -n kube-system -o wide
+   27  kubectl get pods -A
+   28  kubectl get pods -A -o wide
+   29  kubectl get pods
+   30  cat cluster_initialized.txt
+   31  ls /etc/kubernetes/
+   32  ls /etc/kubernetes/manifests/
+   33  cat /etc/kubernetes/controller-manager.conf
+   34  cat /etc/kubernetes/scheduler.conf
+   35  ls
+   36  cat /etc/kubernetes/
+   37  ls /etc/kubernetes/
+   38  ls /etc/kubernetes/pki/
+   39  ls /etc/kubernetes/pki/etcd/
+   40  ls /etc/kubernetes/
+   41  ls /var/lib/kubelet/
+   42  cat /var/lib/kubelet/config.yaml
+   43  systemctl status kubelet
+
+
+======================================================
+
+
+46  kubectl get pods -n kube-system
+   47  kubectl get pods -n kube-system -o wide
+   48  clear
+   49  kubectl get pods -n kube-system -o wide
+   50  docker ps
+   51  clear
+   52  kubectl run pod1 --image nginx
+   53  kubectl get pods
+   54  kubectl get pods -o wide
+   55  kubectl describe pod pod1
+   56  curl 10.10.235.129
+   57  kubectl edit pod pod1
+   58  kubetl describe pod pod1
+   59  kubectl describe pod pod1
+   60  kubectl edit pod pod1
+   61  kubectl apply -f /tmp/kubectl-edit-yfpui.yaml
+   62  kubectl replace  --force -f /tmp/kubectl-edit-yfpui.yaml
+   63  kubectl describe pod pod1
+   64  kubectl get pods -n kube-system
+   65  kubectl get pods
+   66  kubectl get pods -o wide
+   67  kubectl get pods
+   68  kubectl delete pod pod1
+   69  clear
+   70  kubectl run web-pod --image nginx --dry-run=client -o yaml
+   71  kubectl run web-pod --image nginx --dry-run=client -o json
+   72  kubectl get pods
+   73  kubectl run web-pod --image nginx --dry-run=client -o yaml > pod1.yaml
+   74  ls
+   75  vi pod1.yaml
+   76  cat pod1.yaml
+   77  kubectl apply -f pod1.yaml
+   78  vi pod1.yaml
+   79  kubectl apply -f pod1.yaml
+   80  cat pod1.yaml
+   81  kubectl get pods
+   82  vi pod1.yaml
+   83  ls
+   84  kubectl edit pod pod1
+   85  kubectl edit pod web-pod
+   86  vi pod1.yaml
+   87  kubectl apply -f pod1.yaml
+   88  kubectl get pods
+   89  kubectl describe pod web-pod
+
+    
+ ==========================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
