@@ -1,0 +1,40 @@
+
+Replicaset:
+    
+    
+248  vi rs.yaml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend
+  labels:
+    app: guestbook
+    tier: frontend
+spec:
+  # modify replicas according to your case
+  replicas: 4
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        tier: frontend
+    spec:
+      containers:
+      - name: php-redis
+        image: nginx
+            
+---
+
+  249  clear
+  250  kubectl get pods
+  251  kubectl delete pod web-pod
+  252  kubectl get pods
+  253  ls
+  254  kubectl apply -f rs.yaml
+  255  kubectl get rs
+  256  kubectl describe rs frontend
+  257  kubectl get pods
+  258  kubectl delete pod frontend-5rdth
